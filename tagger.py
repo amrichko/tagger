@@ -95,7 +95,7 @@ class Tagger(object):
             settings.read(self.config)
             if "db_path" in settings["default"]:
                 self.db_path = settings["default"]["db_path"]
-            self.db_path = dtr(Path(self.db_path).expanduser())
+            self.db_path = str(Path(self.db_path).expanduser())
         # connect to db
         if verbose: print("DB path is %s" % self.db_path, file=sys.stderr)
         try:
