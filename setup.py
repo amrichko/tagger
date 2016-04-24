@@ -4,7 +4,7 @@ def readme():
     with open('README') as f:
         return f.read()
 
-setup(name='tagger',
+setup(name='simple-tagger',
       version='0.6',
       description='Simple console tool for manage tags on files and directories',
       long_description=readme(),

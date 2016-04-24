@@ -1,6 +1,10 @@
 # tagger
 Simple console tool for manage tag on files and directories
 
+Install
+sudo pip install simple-tagger
+
+
 Tool provide 4 console tool for manage tags:
 - tag - set tag(s) to files or directories
 - lstag - show files or directories that have specified tag
@@ -8,6 +12,7 @@ Tool provide 4 console tool for manage tags:
 - rmtag - remove tag(s) from specified files or directories
 
 You can know about parameters of these tool by adding "--help" parameter.
+
 
 Tool use sqlite database to store information about files and tags.
 By default database location is ~/.tagger.db.
