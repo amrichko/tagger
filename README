@@ -1,3 +1,15 @@
 # tagger
 Simple console tool for manage tag on files and directories
 
+Tool provide 4 console tool for manage tags:
+- tag - set tag(s) to files or directories
+- lstag - show files or directories that have specified tag
+- lsotag - show tag(s) for specified files or directories
+- rmtag - remove tag(s) from specified files or directories
+
+You can know about parameters of these tool by adding "--help" parameter.
+
+Tool use sqlite database to store information about files and tags.
+By default database location is ~/.tagger.db.
+You can change this by creating config /etc/tagger.conf (for all users) or ~/.tagger.conf (only for one user)
+Example of config you can find in repo.
