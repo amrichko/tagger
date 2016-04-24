@@ -18,10 +18,8 @@
 ##
 
 from pathlib import Path
-import argparse
 import sqlite3
 import glob
-import os
 import sys
 from configparser import ConfigParser
 from sh import ls
@@ -77,7 +75,7 @@ def pretty_print(func):
 class Tagger(object):
 
     config = None
-    db_path = "~/tagger.db"
+    db_path = "~/.tagger.db"
 
     def __init__(self, verbose):
         # find config
@@ -103,7 +101,7 @@ class Tagger(object):
             self.cur = self.conn.cursor()
             self.__init_db()
         except sqlite3.OperationalError as e:
-            print("Can't access database %s: %s" % (self.db_path, e))
+            print("Can't access database %s: %s" % (self.db_path, e), file=sys.stderr)
             sys.exit(1)
 
     def __init_db(self):
@@ -212,131 +210,3 @@ class Tagger(object):
         else:
             pass
 
-#-------------------------------------------------------------------------------------
-def main():
-    parser = argparse.ArgumentParser(description='Tool for tag your files or directories')
-    parser.add_argument('-A', action='store_true', help='show all tags and exist')
-    parser.add_argument('-D', "--delete", action='store_true', help='delete tag(s) from file(s) or folder(s)')
-    parser.add_argument('-a', "--all", action='store_true', help='print all files/directories with tags (by default only from current dir)')
-    parser.add_argument('-l', '--ls', action='store_true', help="extended output information (Like 'ls -l')")
-    parser.add_argument('-r', "--recursive", action='store_true', help='manage tag(s) recursivelly')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', "--directories", action='store_true', help='Manage only directories')
-    group.add_argument('-f', "--files", action='store_true', help='Manage only files')
-    parser.add_argument('-v', "--verbose", action='store_true', help='increase output verbosity')
-    parser.add_argument('pattern', type=str, nargs='*', help='list of files, directories or glob that you want to tag')
-    parser.add_argument('-t', '--tags', type=str, nargs='*', help='tag(s) that you want set to file(s) or folder(s)')
-    args = parser.parse_args()
-    if args.verbose: print("Received parameters: %s" % args, file=sys.stderr)
-    if args.A:
-        Tagger(args.verbose).show_tags()
-        sys.exit(0)
-
-    flags = {"all": args.all, "recursive": args.recursive, "verbose": args.verbose, 
-             "ll": args.ls, "files_only": args.files, "dirs_only": args.directories}
-    T = Tagger(args.verbose)
-    if args.delete:
-        T.remove(tags=args.tags, objects=args.pattern, flags=flags)
-    elif args.tags and args.pattern:
-        T.add(tags=args.tags, objects=args.pattern, flags=flags)
-    elif args.tags or args.pattern:
-        T.list(tags=args.tags, objects=args.pattern, flags=flags)
-    else:
-        parser.print_help()
-
-def lstag():
-    parser = argparse.ArgumentParser(description='Tagger alias for show file(s) or folder(s) with specified tag(s)')
-    parser.add_argument('-A', action='store_true', help='show all tags and exist')
-    parser.add_argument('-a', "--all", action='store_true', help='print all file(s)/dir(s) with specified tags (by default only from current dir)')
-    parser.add_argument('-l', '--ls', action='store_true', help="extended output information (Like 'ls -l')")
-    parser.add_argument('-r', "--recursive", action='store_true', help='manage tag(s) recursivelly')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', "--directories", action='store_true', help='Manage only directories')
-    group.add_argument('-f', "--files", action='store_true', help='Manage only files')
-    parser.add_argument('-v', "--verbose", action='store_true', help='increase output verbosity')
-    parser.add_argument('tags', type=str, nargs='*', help='tag(s) that should contain file(s) or folder(s)')
-    args = parser.parse_args()
-    if args.verbose: print("Received parameters: %s" % args, file=sys.stderr)
-    if args.A:
-        Tagger(args.verbose).show_tags()
-        sys.exit(0)
-
-    flags = {"all": args.all, "recursive": args.recursive, "verbose": args.verbose, 
-             "ll": args.ls, "files_only": args.files, "dirs_only": args.directories}
-    T = Tagger(args.verbose)
-    if args.tags:
-        T.list(tags=args.tags, objects=[], flags=flags)
-    else:
-        parser.print_help()
-
-def lsotag():
-    parser = argparse.ArgumentParser(description='Tagger alias for show tags of specified file(s) or folder(s)')
-    parser.add_argument('-l', '--ls', action='store_true', help="extended output information (Like 'ls -l')")
-    parser.add_argument('-r', "--recursive", action='store_true', help='manage file(s)/folder(s) recursivelly')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', "--directories", action='store_true', help='Manage only directories')
-    group.add_argument('-f', "--files", action='store_true', help='Manage only files')
-    parser.add_argument('-v', "--verbose", action='store_true', help='increase output verbosity')
-    parser.add_argument('pattern', type=str, nargs='*', help='file(s) or dir(s) for which you want to see tags')
-    args = parser.parse_args()
-    if args.verbose: print("Received parameters: %s" % args, file=sys.stderr)
-
-    flags = {"recursive": args.recursive, "verbose": args.verbose, "ll": args.ls,
-             "files_only": args.files, "dirs_only": args.directories}
-    T = Tagger(args.verbose)
-    if args.pattern:
-        T.list(tags=[], objects=args.pattern, flags=flags)
-    else:
-        parser.print_help()
-
-def tag():
-    parser = argparse.ArgumentParser(description='Tagger alias for setting tags to specified files(s) or folder(s)')
-    parser.add_argument('-r', "--recursive", action='store_true', help='manage file(s)/dir(s) recursivelly')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', "--directories", action='store_true', help='Manage only directories')
-    group.add_argument('-f', "--files", action='store_true', help='Manage only files')
-    parser.add_argument('-v', "--verbose", action='store_true', help='increase output verbosity')
-    parser.add_argument('pattern', type=str, nargs='+', help='file(s), dir(s) or glob for which you want set tags')
-    parser.add_argument('-t', '--tags', type=str, nargs='+', help='tag(s) that you want set to file(s)/dir(s)', required=True)
-    args = parser.parse_args()
-    if args.verbose: print("Received parameters: %s" % args, file=sys.stderr)
-
-    flags = {"recursive": args.recursive, "verbose": args.verbose, "files_only": args.files, "dirs_only": args.directories}
-    T = Tagger(args.verbose)
-    if args.pattern and args.tags:
-        T.add(tags=args.tags, objects=args.pattern, flags=flags)
-    else:
-        parser.print_help()
-
-def rmtag():
-    parser = argparse.ArgumentParser(description='Tagger alias for removing tags from specified file(s) or folder(s)')
-    parser.add_argument('-r', "--recursive", action='store_true', help='manage file(s)/dir(s) recursivelly')
-    parser.add_argument('-v', "--verbose", action='store_true', help='increase output verbosity')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', "--directories", action='store_true', help='Manage only directories')
-    group.add_argument('-f', "--files", action='store_true', help='Manage only files')
-    parser.add_argument('pattern', type=str, nargs='*', help='file(s), dir(s) or glob for which you want remove tags')
-    parser.add_argument('-t', '--tags', type=str, nargs='*', help='tag(s) that you want remove from file(s) or dir(s)')
-    args = parser.parse_args()
-    if args.verbose: print("Received parameters: %s" % args, file=sys.stderr)
-
-    flags = {"recursive": args.recursive, "verbose": args.verbose, "files_only": args.files, "dirs_only": args.directories}
-    T = Tagger(args.verbose)
-    if args.pattern or args.tags:
-        T.remove(tags=args.tags, objects=args.pattern, flags=flags)
-    else:
-        parser.print_help()
-
-
-if __name__ == "__main__":
-    alias = os.path.basename(__file__)
-    if alias == "lstag":
-        lstag()
-    elif alias == "lsotag":
-        lsotag()
-    elif alias == "tag":
-        tag()
-    elif alias == "rmtag":
-        rmtag()
-    else:
-        main()
