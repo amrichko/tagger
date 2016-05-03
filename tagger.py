@@ -61,14 +61,14 @@ def pretty_print(func):
                 if flags["ll"]:
                     print(ls("-l", "-d", o), end='')
                 else:
-                    print(o, end=' ')
+                    print(o if ' ' not in o else repr(o), end=' ')
                     endl = True
             else:
                 if flags["ll"]:
                     ls_out = str(ls("-l", "-d", o[0]))
                     print(ls_out[:-1], o[1])
                 else:
-                    print(' '.join(o))
+                    print(' '.join([el if ' ' not in el else repr(el) for el in o]))
         if endl: print()
     return wrapper
 
